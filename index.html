@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#17120F" />
+<meta name="description" content="Speak English, get Nepali. A pocket interpreter for visitors to Nepal." />
+
+<!-- Installable app: iOS reads these instead of the manifest icons. -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Kura" />
+<meta name="format-detection" content="telephone=no" />
+
+<title>Kura — speak Nepali</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="stylesheet" href="styles.css?v=17" />
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">क</span>
+      <div class="brand-txt">
+        <strong>Kura</strong>
+        <span id="dirLabel">English → नेपाली</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="swapBtn" title="Swap direction" aria-label="Swap direction">⇄</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
+    </div>
+  </header>
+
+  <!-- ============ TALK SCREEN ============ -->
+  <main class="screen is-active" id="screen-talk">
+
+    <div class="dir-switch" id="dirSwitch" role="group" aria-label="Who is speaking">
+      <button data-mode="en2ne" class="is-active">ENGLISH TO NEPALI</button>
+      <button data-mode="ne2en">NEPALI TO ENGLISH</button>
+    </div>
+
+    <section class="card card-src" id="srcCard">
+      <span class="card-label"><span id="srcLabel">You said</span><em class="engine-tag" id="engineTag" hidden></em></span>
+      <p class="src-text" id="srcText">Tap the mic and say it in English</p>
+    </section>
+
+    <section class="card card-dst" id="dstCard">
+      <div class="dst-head">
+        <span class="card-label" id="dstLabel">नेपाली</span>
+        <div class="dst-tools">
+          <button class="replay-btn" id="replayBtn" title="Hear it again" aria-label="Hear it again">
+            <span class="replay-ico" aria-hidden="true">🔊</span><span>Re-hear</span>
+          </button>
+          <button class="mini-btn" id="showBtn" title="Show fullscreen" aria-label="Show fullscreen">⤢</button>
+        </div>
+      </div>
+      <p class="dst-text" id="dstText">—</p>
+      <p class="roman-text" id="romanText"></p>
+      <p class="hint" id="dstHint">The Nepali is spoken out loud automatically.</p>
+    </section>
+
+    <div class="mic-error" id="micError" hidden>
+      <strong id="micErrTitle">Voice input isn't working</strong>
+      <span id="micErrBody"></span>
+      <div class="err-actions">
+        <button class="primary" id="micRetry">Try again</button>
+        <button id="micType">Type instead</button>
+      </div>
+    </div>
+
+    <div class="mic-dock">
+      <button class="mic-btn" id="micBtn" aria-label="Hold to talk, release to translate">
+        <span class="mic-ring"></span>
+        <svg viewBox="0 0 24 24" class="mic-ico" aria-hidden="true">
+          <path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3Z"/>
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <p class="mic-label" id="micLabel">Hold to talk</p>
+      <button class="type-toggle" id="typeToggle">Type instead</button>
+    </div>
+
+    <form class="type-row" id="typeRow" hidden>
+      <input id="typeInput" type="text" placeholder="Type in English…" autocomplete="off"
+             enterkeyhint="send" spellcheck="false" />
+      <button type="submit" class="send-btn" aria-label="Translate">↑</button>
+    </form>
+  </main>
+
+  <!-- ============ PHRASES SCREEN ============ -->
+  <main class="screen" id="screen-phrases">
+    <div class="screen-head">
+      <h2>Offline phrasebook</h2>
+      <p class="sub">Works with no signal. Tap a phrase to show it.</p>
+    </div>
+    <div class="cat-bar" id="catBar"></div>
+    <div class="phrase-list" id="phraseList"></div>
+  </main>
+
+  <!-- ============ LOG SCREEN ============ -->
+  <main class="screen" id="screen-log">
+    <div class="screen-head">
+      <h2>Recent</h2>
+      <button class="text-btn" id="clearLogBtn">Clear</button>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </main>
+
+  <nav class="tabbar" role="tablist">
+    <button class="tab is-active" data-tab="talk" role="tab" aria-selected="true"><span aria-hidden="true">🎙</span>Talk</button>
+    <button class="tab" data-tab="phrases" role="tab" aria-selected="false"><span aria-hidden="true">📖</span>Phrases</button>
+    <button class="tab" data-tab="log" role="tab" aria-selected="false"><span aria-hidden="true">🕘</span>Recent</button>
+  </nav>
+</div>
+
+<!-- ============ SHOW OVERLAY ============ -->
+<div class="show-overlay" id="showOverlay" hidden>
+  <div class="show-top">
+    <span class="show-tag" id="showTag">नेपाली</span>
+    <button class="show-x" id="showX" aria-label="Close">✕</button>
+  </div>
+  <div class="show-inner">
+    <p class="show-ne" id="showNe"></p>
+    <p class="show-roman" id="showRoman"></p>
+  </div>
+  <div class="show-foot">
+    <button class="show-play" id="showPlay">🔊 Play</button>
+    <button class="show-close" id="showClose">Close</button>
+  </div>
+</div>
+
+<!-- ============ SETTINGS SHEET ============ -->
+<div class="sheet-backdrop" id="sheetBackdrop" hidden>
+  <div class="sheet" id="settingsSheet">
+    <div class="sheet-grip"></div>
+    <h3>Settings</h3>
+
+    <button class="install-btn" id="installBtn" hidden>
+      <span class="install-ico" aria-hidden="true">⬇</span>
+      <span class="install-copy">
+        <strong>Install Kura</strong>
+        <span>Home screen, full screen, works offline</span>
+      </span>
+    </button>
+    <p class="install-hint" id="installHint" hidden></p>
+
+    <label class="row">
+      <div><strong>Speak automatically</strong><span>Play the Nepali audio right after translating</span></div>
+      <input type="checkbox" id="setAutoSpeak" checked />
+    </label>
+
+    <label class="row">
+      <div><strong>Slow speech</strong><span>Clearer for tricky phrases</span></div>
+      <input type="checkbox" id="setSlow" />
+    </label>
+
+    <label class="row">
+      <div><strong>Nepali voice</strong><span>Hemkala &amp; Sagar need the speech server. Without it, your phone's own Nepali voice is used; Google legacy is the robotic one.</span></div>
+      <select id="setVoice">
+        <option value="ne-NP-HemkalaNeural">Hemkala · female</option>
+        <option value="ne-NP-SagarNeural">Sagar · male</option>
+        <option value="device">Phone voice · free, offline</option>
+        <option value="google">Google · legacy</option>
+      </select>
+    </label>
+
+    <label class="row">
+      <div><strong>Voice engine</strong><span>Online sounds better; device works offline</span></div>
+      <select id="setEngine">
+        <option value="auto">Auto (best)</option>
+        <option value="online">Online (natural)</option>
+        <option value="device">Device (offline)</option>
+      </select>
+    </label>
+
+    <p class="sheet-note" id="engineNote"></p>
+
+    <details class="adv">
+      <summary>Voice input (advanced)</summary>
+      <p class="sheet-note">
+        Chrome's built-in speech service is unreliable and sends your audio to Google.
+        Point this at your own Whisper server or any OpenAI-compatible transcription
+        endpoint to record and transcribe instead. Leave empty to use the browser's mic.
+        Stored only on this device.
+      </p>
+      <input id="sttEndpoint" type="url" placeholder="http://localhost:8081/v1/audio/transcriptions" />
+      <input id="sttKey" type="password" placeholder="API key (optional)" autocomplete="off" />
+      <input id="sttModel" type="text" placeholder="whisper-1" />
+    </details>
+
+    <button class="sheet-done" id="sheetDone">Done</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="translit.js?v=17"></script>
+<script src="phrases.js?v=17"></script>
+<script src="app.js?v=17"></script>
+</body>
+</html>
+
+

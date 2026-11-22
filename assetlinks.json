@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.kura.translator",
+    "sha256_cert_fingerprints": ["D1:CD:D5:7B:5F:A6:C3:11:BC:81:DA:31:34:72:4A:6E:0D:80:2A:9B:57:46:5E:D9:6C:8E:2D:86:8F:59:81:19"]
+  }
+}]

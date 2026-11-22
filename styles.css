@@ -1,0 +1,520 @@
+/* ================================================
+   Kura — speak Nepali.  Mobile-first, sunlight-legible.
+   ================================================ */
+
+:root {
+  --bg:        #17120F;
+  --bg-deep:   #100C0A;
+  --card:      #241B17;
+  --card-2:    #2E231E;
+  --line:      #3A2C26;
+  --text:      #FFF6F0;
+  --muted:     #B49E93;
+  --accent:    #E01B3C;   /* Nepal flag crimson */
+  --accent-dk: #B01230;
+  --blue:      #2C5FD6;   /* Nepal flag blue  */
+  --ok:        #33B27B;
+  --radius:    20px;
+  --safe-b:    env(safe-area-inset-bottom, 0px);
+  --safe-t:    env(safe-area-inset-top, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* Author `display:` rules beat the UA `[hidden]` rule — make hidden mean hidden. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #2A1C18 0%, var(--bg-deep) 60%);
+}
+
+.app {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ---------------- top bar ---------------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(10px + var(--safe-t)) 16px 10px;
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: linear-gradient(150deg, var(--accent), #8E0E26);
+  font-size: 20px; font-weight: 700; color: #fff;
+  box-shadow: 0 4px 14px rgba(224,27,60,.35);
+}
+.brand-txt { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-txt strong { font-size: 17px; letter-spacing: .2px; }
+.brand-txt span { font-size: 11.5px; color: var(--muted); }
+.topbar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--text); font-size: 17px; cursor: pointer;
+  display: grid; place-items: center;
+  transition: background .15s, transform .1s;
+}
+.icon-btn:active { transform: scale(.94); background: var(--card-2); }
+
+/* ---------------- screens ---------------- */
+.screen {
+  display: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 16px 8px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.screen.is-active { display: flex; flex-direction: column; }
+
+/* Inside a scrolling flex column, children must not be squashed. */
+.screen-head,
+.cat-bar,
+.phrase-list,
+.log-list { flex: 0 0 auto; }
+
+/* ---------------- direction switch ---------------- */
+.dir-switch {
+  flex: 0 0 auto;
+  display: flex; gap: 4px; padding: 4px; margin-bottom: 12px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.dir-switch button {
+  flex: 1; padding: 11px 4px;
+  border: none; border-radius: 10px;
+  background: transparent; color: var(--muted);
+  cursor: pointer; font-weight: 700;
+  font-size: 12.5px; letter-spacing: .4px; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+}
+.dir-switch button span { font-size: 10.5px; font-weight: 500; opacity: .75; }
+.dir-switch button.is-active { background: var(--accent); color: #fff; }
+.dir-switch button.is-active span { opacity: .9; }
+
+/* An unselected segment must still look like a button. Bare muted text on the
+   container's own background reads as disabled — which is exactly how it was
+   reported. Give it a surface and press feedback. */
+.dir-switch button:not(.is-active) {
+  background: rgba(255, 255, 255, .05);
+  color: #E7D8D0;
+}
+.dir-switch button:not(.is-active):hover { background: rgba(255, 255, 255, .09); }
+.dir-switch button:active { transform: scale(.98); }
+
+/* ---------------- cards ---------------- */
+.card {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  flex: 0 0 auto;
+}
+.card-dst { min-height: 132px; }
+.card-src { background: transparent; border-style: dashed; border-color: #40302A; }
+.card-label {
+  display: block;
+  font-size: 11px; letter-spacing: .9px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px; font-weight: 600;
+}
+.engine-tag {
+  font-style: normal; text-transform: none; letter-spacing: 0;
+  margin-left: 6px; padding: 1px 6px; border-radius: 5px;
+  background: rgba(255,255,255,.08); color: #C6A79A;
+  font-size: 10px; font-weight: 500;
+}
+.engine-tag.is-weak { background: rgba(224,27,60,.2); color: #FFB49B; }
+
+.src-text {
+  margin: 0; font-size: 19px; line-height: 1.4; color: #EFE2DA;
+  word-break: break-word;
+}
+.card-src.has-text .src-text { color: var(--text); }
+
+.card-dst {
+  background: linear-gradient(165deg, #2C1E19, #221A17);
+  border-color: #43302A;
+  box-shadow: 0 10px 30px -18px #000;
+}
+.card-dst.is-live { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(224,27,60,.3), 0 12px 34px -18px #000; }
+.dst-head { display: flex; align-items: center; justify-content: space-between; }
+.dst-tools { display: flex; gap: 6px; }
+.mini-btn {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: rgba(255,255,255,.06); border: 1px solid var(--line);
+  color: var(--text); font-size: 14px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.mini-btn:active { background: rgba(255,255,255,.14); }
+
+/* Re-hear: a real, labelled button. Bigger than the emoji icon it replaced,
+   and still reachable by a thumb without aiming. */
+.replay-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 38px; padding: 0 13px; border-radius: 11px;
+  background: rgba(224, 27, 60, .16);
+  border: 1px solid rgba(224, 27, 60, .5);
+  color: #FFD9D2; font-size: 13px; font-weight: 700;
+  letter-spacing: .2px; cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.replay-btn .replay-ico { font-size: 15px; line-height: 1; }
+.replay-btn:hover { background: rgba(224, 27, 60, .26); }
+.replay-btn:active { transform: scale(.96); background: rgba(224, 27, 60, .34); }
+.dst-text {
+  margin: 2px 0 0;
+  font-size: 30px; line-height: 1.35; font-weight: 600;
+  word-break: break-word;
+  min-height: 1.35em;
+}
+.roman-text {
+  margin: 10px 0 0; font-size: 15px; color: #D8A99B;
+  font-style: italic; letter-spacing: .2px;
+}
+.roman-text:empty { display: none; }
+.hint { margin: 12px 0 0; font-size: 12px; color: #8C7568; }
+
+/* ---------------- quick chips ---------------- */
+.empty-state { margin-top: 2px; flex: 0 0 auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.chip {
+  padding: 9px 14px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line);
+  color: #DEC9BF; font-size: 13.5px; cursor: pointer;
+  transition: background .15s;
+}
+.chip:active { background: var(--card-2); }
+
+/* ---------------- mic ---------------- */
+.mic-dock {
+  flex: 0 0 auto;
+  margin-top: auto;              /* soak up the leftover space above the mic */
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 14px 0 6px;
+}
+.mic-btn {
+  position: relative;
+  width: 108px; height: 108px; border-radius: 50%;
+  border: none; cursor: pointer;
+  background: linear-gradient(150deg, var(--accent), var(--accent-dk));
+  color: #fff; display: grid; place-items: center;
+  box-shadow: 0 10px 30px -8px rgba(224,27,60,.65);
+  transition: transform .12s ease;
+}
+.mic-btn {
+  touch-action: none;              /* stop the browser stealing the press for scroll/zoom */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;     /* no long-press callout on iOS */
+}
+.mic-btn:active { transform: scale(.95); }
+
+/* Push-to-talk: the button visibly "arms" while held. */
+.mic-btn.is-holding {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 10px rgba(224,27,60,.16), 0 12px 36px -6px rgba(224,27,60,.8);
+}
+.mic-ico { width: 44px; height: 44px; fill: #fff; stroke: #fff; }
+.mic-btn.is-rec {
+  background: linear-gradient(150deg, #FF3B5C, #C4122F);
+  animation: pulse 1.4s ease-out infinite;
+}
+.mic-btn.is-busy { opacity: .6; pointer-events: none; }
+.mic-ring {
+  position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid transparent;
+}
+.mic-btn.is-rec .mic-ring { border-color: rgba(255,90,120,.55); }
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255,59,92,.55); }
+  70%  { box-shadow: 0 0 0 22px rgba(255,59,92,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,59,92,0); }
+}
+
+.mic-label {
+  margin: 0; font-size: 18px; font-weight: 600;
+  color: #E7D8D0; letter-spacing: .2px;
+}
+
+.mic-error {
+  flex: 0 0 auto;
+  margin: 0 0 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #33221C;
+  border: 1px solid #5A3A2C;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #E8D3C8;
+}
+.mic-error strong { color: #FFB49B; display: block; margin-bottom: 4px; font-size: 13px; }
+.mic-error .err-actions { display: flex; gap: 8px; margin-top: 10px; }
+.mic-error button {
+  padding: 7px 13px; border-radius: 9px; font-size: 12.5px; cursor: pointer;
+  border: 1px solid var(--line); background: rgba(255,255,255,.07); color: var(--text);
+}
+.mic-error button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.type-toggle {
+  background: none; border: none; color: #9C8377;
+  font-size: 13px; text-decoration: underline; cursor: pointer;
+  padding: 4px 8px;
+}
+
+.type-row {
+  display: flex; gap: 8px; padding: 0 0 10px; flex: 0 0 auto;
+}
+.type-row input {
+  flex: 1; padding: 14px 16px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--text); font-size: 16px; outline: none;
+}
+.type-row input:focus { border-color: var(--accent); }
+.send-btn {
+  width: 50px; border-radius: 14px; border: none;
+  background: var(--accent); color: #fff; font-size: 20px;
+  font-weight: 700; cursor: pointer;
+}
+
+/* ---------------- tabbar ---------------- */
+.tabbar {
+  flex: 0 0 auto;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  padding-bottom: var(--safe-b);
+  background: var(--bg-deep);
+}
+.tab {
+  background: none; border: none; cursor: pointer;
+  padding: 10px 0 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; color: #8A7267;
+}
+.tab span { font-size: 17px; filter: grayscale(1) opacity(.65); }
+.tab.is-active { color: var(--text); }
+.tab.is-active span { filter: none; }
+
+/* ---------------- phrases screen ---------------- */
+.screen-head { display: flex; align-items: baseline; justify-content: space-between; }
+.screen-head h2 { margin: 0 0 4px; font-size: 20px; }
+.screen-head .sub { margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
+.text-btn {
+  background: none; border: none; color: var(--muted);
+  font-size: 13px; cursor: pointer; text-decoration: underline;
+}
+
+.cat-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 12px;
+}
+.cat {
+  flex: 0 0 auto; padding: 8px 14px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line);
+  color: #C9B4A9; font-size: 13px; cursor: pointer;
+}
+.cat.is-active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+.phrase-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; }
+.phrase {
+  text-align: left; width: 100%;
+  padding: 13px 15px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--text); cursor: pointer;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.phrase:active { background: var(--card-2); }
+.phrase .p-en { font-size: 12.5px; color: var(--muted); }
+.phrase .p-ne { font-size: 18px; font-weight: 600; }
+.phrase .p-roman { font-size: 12px; color: #B98F80; font-style: italic; }
+
+/* ---------------- log screen ---------------- */
+.log-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; }
+.log-item {
+  text-align: left; width: 100%;
+  padding: 12px 14px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--line);
+  color: var(--text); cursor: pointer;
+}
+.log-item .l-src { font-size: 12.5px; color: var(--muted); display: block; margin-bottom: 4px; }
+.log-item .l-dst { font-size: 17px; font-weight: 600; display: block; }
+.log-item .l-roman { font-size: 11.5px; color: #B98F80; font-style: italic; display: block; margin-top: 3px; }
+.log-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 40px 0; }
+
+/* ---------------- show overlay ---------------- */
+.show-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: #FFFDFA; color: #0A0806;
+  display: flex; flex-direction: column;
+  padding: calc(24px + var(--safe-t)) 20px calc(20px + var(--safe-b));
+  animation: fade .16s ease-out;
+}
+.show-overlay[hidden] { display: none; }
+.show-top {
+  flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.show-tag {
+  font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase;
+  font-weight: 700; color: #8A776D;
+}
+.show-x {
+  width: 40px; height: 40px; border-radius: 12px; border: none;
+  background: #EDE6E0; color: #0A0806; font-size: 15px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.show-inner {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  overflow-y: auto;
+}
+.show-ne {
+  margin: 0; font-size: clamp(38px, 12.5vw, 92px);
+  line-height: 1.24; font-weight: 700; letter-spacing: -.5px;
+  word-break: break-word; text-wrap: balance;
+}
+.show-roman {
+  margin: 22px 0 0; font-size: clamp(15px, 4.2vw, 22px);
+  color: #6B5B52; font-style: italic;
+}
+.show-roman:empty { display: none; }
+.show-foot { display: flex; gap: 10px; }
+.show-foot button {
+  flex: 1; padding: 16px; border-radius: 16px; border: none;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+}
+.show-play { background: #0A0806; color: #FFFDFA; }
+.show-close { background: #EDE6E0; color: #0A0806; }
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* ---------------- settings sheet ---------------- */
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.sheet-backdrop[hidden] { display: none; }
+.sheet {
+  width: 100%; max-width: 520px;
+  background: var(--card); border-radius: 22px 22px 0 0;
+  padding: 10px 20px calc(20px + var(--safe-b));
+  border-top: 1px solid var(--line);
+  animation: slideUp .2s ease-out;
+}
+.sheet-grip {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: #4A3A33; margin: 6px auto 14px;
+}
+.sheet h3 { margin: 0 0 12px; font-size: 17px; }
+.row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line);
+}
+.row div { display: flex; flex-direction: column; gap: 2px; }
+.row strong { font-size: 14.5px; font-weight: 600; }
+.row span { font-size: 12px; color: var(--muted); }
+/* custom switch — native checkboxes look wrong on a dark theme */
+.row input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 50px; height: 30px; margin: 0; flex: 0 0 auto;
+  border-radius: 999px; background: #3A2C26;
+  position: relative; cursor: pointer;
+  transition: background .18s ease;
+}
+.row input[type="checkbox"]::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #8C7568;
+  transition: transform .18s ease, background .18s ease;
+}
+.row input[type="checkbox"]:checked { background: var(--accent); }
+.row input[type="checkbox"]:checked::after { transform: translateX(20px); background: #fff; }
+.row select {
+  background: var(--card-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 10px; font-size: 13.5px;
+}
+.sheet-note { font-size: 12px; color: #8C7568; margin: 14px 0 0; line-height: 1.5; }
+
+.adv { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 12px; }
+.adv summary {
+  cursor: pointer; font-size: 13.5px; font-weight: 600;
+  color: #D8BFAF; list-style: none;
+}
+.adv summary::-webkit-details-marker { display: none; }
+.adv summary::before { content: '▸ '; color: var(--muted); }
+.adv[open] summary::before { content: '▾ '; }
+.adv input {
+  width: 100%; margin-top: 8px; padding: 11px 13px;
+  border-radius: 11px; background: var(--bg-deep);
+  border: 1px solid var(--line); color: var(--text);
+  font-size: 13px; outline: none;
+}
+.adv input:focus { border-color: var(--accent); }
+.sheet-done {
+  width: 100%; margin-top: 18px; padding: 15px;
+  border: none; border-radius: 14px;
+  background: var(--accent); color: #fff;
+  font-size: 15.5px; font-weight: 700; cursor: pointer;
+}
+@keyframes slideUp { from { transform: translateY(24px); opacity: .6 } to { transform: none; opacity: 1 } }
+
+/* ---------------- toast ---------------- */
+.toast {
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+  z-index: 90; max-width: 88%;
+  background: #34261F; color: var(--text);
+  padding: 11px 18px; border-radius: 12px;
+  font-size: 13px; text-align: center;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 24px -10px #000;
+}
+.toast[hidden] { display: none; }
+
+/* ---------------- install as an app ---------------- */
+.install-btn {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  margin: 0 0 14px; padding: 13px 14px;
+  border-radius: 14px; cursor: pointer; text-align: left;
+  background: rgba(224, 27, 60, .16);
+  border: 1px solid rgba(224, 27, 60, .5);
+  color: var(--text);
+  transition: background .15s, transform .1s;
+}
+.install-btn:active { transform: scale(.985); background: rgba(224, 27, 60, .26); }
+.install-ico {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 16px;
+  background: var(--accent); color: #fff;
+}
+.install-copy { display: flex; flex-direction: column; gap: 2px; }
+.install-copy strong { font-size: 14.5px; }
+.install-copy span { font-size: 12px; color: #D8A99B; }
+.install-hint {
+  margin: 0 0 14px; padding: 11px 13px; font-size: 12.5px; line-height: 1.45;
+  color: #E7D8D0; background: rgba(255,255,255,.05);
+  border: 1px solid var(--line); border-radius: 12px;
+}
